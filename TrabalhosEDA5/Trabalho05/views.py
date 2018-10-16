@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+
 def home(request):
     if request.method == 'POST' and request.FILES['myfile']:
         myfile = request.FILES['myfile']

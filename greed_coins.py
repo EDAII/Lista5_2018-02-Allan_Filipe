@@ -1,6 +1,6 @@
 def coin_changing(coins_list, change_value):
 
-    current_position = len(coins_list)-1
+    current_position = len(coins_list) - 1
     coins_selected = []
 
     while change_value != 0:
@@ -13,6 +13,7 @@ def coin_changing(coins_list, change_value):
             coins_selected.append(coins_list[current_position])
 
     return coins_selected
+
 
 coins_list = [1, 5, 10, 25, 100]
 change_value = 289
