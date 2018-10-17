@@ -2,12 +2,16 @@ from django.shortcuts import render
 
 
 def home(request):
+    if request.method == 'POST':
+        print(request.POST['selectedOption'])
+        
     if request.method == 'POST' and request.FILES['myfile']:
         myfile = request.FILES['myfile']
         byte_str = myfile.file.read()
 
         # Convert to a "unicode" object
         text_obj = byte_str.decode('UTF-8')
+        print(text_obj)
         columns_descriptions, all_data = read_csv(text_obj.splitlines())
 
         return render(request, 'result.html', {'columns_descriptions': columns_descriptions})

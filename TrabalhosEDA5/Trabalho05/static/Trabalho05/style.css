@@ -23,3 +23,8 @@ html,
 .button-color {
     background-color: white;
 }
+
+.column-in-center{
+    float: none;
+    margin: 0 auto;
+}
