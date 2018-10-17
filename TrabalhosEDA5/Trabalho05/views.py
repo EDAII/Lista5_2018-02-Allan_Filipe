@@ -1,6 +1,7 @@
 from django.shortcuts import render
+import time
 
-# Coins list used in coin changing algorithm
+# Coins list used in coin changing greed algorithm
 coins_list = [1, 5, 10, 25, 50, 100]
 
 
@@ -15,18 +16,22 @@ def home(request):
         # Choosing algorithm options
         if request.POST['selectedOption'] == "Greed - Coin Changing":
             change_list = read_csv_coin(text_obj.splitlines())
-            print(change_list)
-            change_list_results = calculate_all_changes(change_list)
-            print(change_list_results)
+            change_list_results, change_list_times = calculate_all_changes(change_list)
+            change_list_full = coin_changing_formating_result(change_list, change_list_results, change_list_times)
+
+            return render(request, 'result.html', {'algorithm': request.POST['selectedOption'],
+                                                   'change_list_full': change_list_full,
+                                                   'change_list': change_list,
+                                                   'change_list_results': change_list_results,
+                                                   'change_list_times': change_list_times})
+
         elif request.POST['selectedOption'] == "Greed - Interval Scheduling":
-            pass
+            columns_descriptions, all_data = read_csv(text_obj.splitlines())
+
+            return render(request, 'result.html', {'columns_descriptions': columns_descriptions})
         else:
             # Nothing to do
             pass
-
-        columns_descriptions, all_data = read_csv(text_obj.splitlines())
-
-        return render(request, 'result.html', {'columns_descriptions': columns_descriptions})
     else:
         # Nothing to do
         pass
@@ -45,11 +50,18 @@ def read_csv_coin(file):
 
 def calculate_all_changes(change_list):
     change_list_results = []
+    change_list_times = []
 
     for change in change_list:
+        time_initial = time.time()
+
         change_list_results.append(coin_changing(change))
 
-    return change_list_results
+        time_final = time.time() - time_initial
+
+        change_list_times.append(time_final)
+
+    return change_list_results, change_list_times
 
 
 def coin_changing(change_value):
@@ -68,6 +80,54 @@ def coin_changing(change_value):
             coins_selected.append(coins_list[current_position])
 
     return coins_selected
+
+
+def coin_changing_formating_result(change_list, change_list_results, change_list_times):
+    change_list_full = []
+
+    for i in range(len(change_list)):
+        current_vector = []
+        current_vector.append("{0:.2f}".format(change_list[i] / 100.00))
+        current_vector = add_coins_count(current_vector, change_list_results[i])
+        current_vector.append(round(change_list_times[i], 15))
+        change_list_full.append(current_vector)
+
+    return change_list_full
+
+
+def add_coins_count(current_vector, change_list_results):
+    coin_1 = 0
+    coin_5 = 0
+    coin_10 = 0
+    coin_25 = 0
+    coin_50 = 0
+    coin_100 = 0
+
+    for coin in change_list_results:
+        if coin == 1:
+            coin_1 += 1
+        elif coin == 5:
+            coin_5 += 1
+        elif coin == 10:
+            coin_10 += 1
+        elif coin == 25:
+            coin_25 += 1
+        elif coin == 50:
+            coin_50 += 1
+        elif coin == 100:
+            coin_100 += 1
+        else:
+            # Nothing to do.
+            pass
+
+    current_vector.append(coin_1)
+    current_vector.append(coin_5)
+    current_vector.append(coin_10)
+    current_vector.append(coin_25)
+    current_vector.append(coin_50)
+    current_vector.append(coin_100)
+
+    return current_vector
 
 
 def read_csv(file):
