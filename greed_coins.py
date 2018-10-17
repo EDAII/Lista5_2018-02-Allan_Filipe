@@ -8,7 +8,7 @@ def coin_changing(coins_list, change_value):
             current_position -= 1
         elif current_position < 0:
             return "não existe solução"
-        else:    
+        else:
             change_value -= coins_list[current_position]
             coins_selected.append(coins_list[current_position])
 
