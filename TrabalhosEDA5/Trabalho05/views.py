@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from datetime import datetime, date
+from datetime import datetime
 import time
 
 # Coins list used in coin changing greed algorithm
@@ -17,7 +17,9 @@ def home(request):
         # Choosing algorithm options
         if request.POST['selectedOption'] == "Greed - Coin Changing":
             change_list = read_csv_coin(text_obj.splitlines())
+
             change_list_results, change_list_times = calculate_all_changes(change_list)
+
             change_list_full = coin_changing_formating_result(change_list, change_list_results, change_list_times)
 
             return render(request, 'result.html', {'algorithm': request.POST['selectedOption'],
@@ -28,14 +30,18 @@ def home(request):
 
         elif request.POST['selectedOption'] == "Greed - Interval Scheduling":
             columns_descriptions, all_data = read_csv_jobs(text_obj.splitlines())
-            jobs_list = convert_to_datetime(all_data)
-            jobs_selected, time_final = interval_scheduling_jobs(jobs_list)
+
+            jobs_list = sorted(all_data, key=getKey)
+
+            jobs_list = convert_to_datetime(jobs_list)
+
+            jobs_selected, execution_time = interval_scheduling_jobs(jobs_list)
 
             return render(request, 'result.html', {'algorithm': request.POST['selectedOption'],
                                                    'columns_descriptions': columns_descriptions,
                                                    'jobs_list': jobs_list,
                                                    'jobs_selected': jobs_selected,
-                                                   'time_final': time_final})
+                                                   'execution_time': execution_time})
         else:
             # Nothing to do
             pass
@@ -137,23 +143,6 @@ def add_coins_count(current_vector, change_list_results):
     return current_vector
 
 
-def read_csv(file):
-    all_data = []
-    columns_descriptions = []
-
-    # Save all csv data in a list of lists, removing '\n' at the last line element.
-    for line in file:
-        if not columns_descriptions:
-            columns_descriptions = line.split(",")
-            columns_descriptions[-1] = columns_descriptions[-1].strip("\n")
-        else:
-            line_splitted = line.split(",")
-            line_splitted[-1] = line_splitted[-1].strip("\n")
-            all_data.append(line_splitted)
-
-    return columns_descriptions, all_data
-
-
 def read_csv_jobs(file):
     all_data = []
     columns_descriptions = []
@@ -172,11 +161,9 @@ def read_csv_jobs(file):
 
 
 def convert_to_datetime(jobs_list):
-
     for job in jobs_list:
-        job[1] = datetime.strptime(job[1],'%H:%M:%S').time()
-        job[2] = datetime.strptime(job[2],'%H:%M:%S').time()
-        print(job[1])
+        job[1] = datetime.strptime(job[1], '%H:%M:%S').time()
+        job[2] = datetime.strptime(job[2], '%H:%M:%S').time()
 
     return jobs_list
 
@@ -184,13 +171,22 @@ def convert_to_datetime(jobs_list):
 def interval_scheduling_jobs(jobs_list):
     time_initial = time.time()
 
-    jobs_selected = [jobs_list[0],]
-    current_position = len(jobs_selected)-1
+    jobs_selected = [jobs_list[0], ]
+    jobs_list[0].append(True)
+    current_position = len(jobs_selected) - 1
+
     for i in range(1, len(jobs_list)):
         if jobs_selected[current_position][2] <= jobs_list[i][1]:
             jobs_selected.append(jobs_list[i])
+            jobs_list[i].append(True)
             current_position += 1
+        else:
+            jobs_list[i].append(False)
 
     time_final = time.time() - time_initial
 
     return jobs_selected, time_final
+
+
+def getKey(item):
+    return item[2]
