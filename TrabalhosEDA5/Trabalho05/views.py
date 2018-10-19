@@ -18,7 +18,7 @@ def home(request):
         if request.POST['selectedOption'] == "Greed - Coin Changing":
             change_list = read_csv_coin(text_obj.splitlines())
 
-            change_list_results, change_list_times = calculate_all_changes(change_list)
+            change_list_results, change_list_times, time_final_total = calculate_all_changes(change_list)
 
             change_list_full = coin_changing_formating_result(change_list, change_list_results, change_list_times)
 
@@ -26,6 +26,7 @@ def home(request):
                                                    'change_list_full': change_list_full,
                                                    'change_list': change_list,
                                                    'change_list_results': change_list_results,
+                                                   'time_final_total': time_final_total,
                                                    'change_list_times': change_list_times})
 
         elif request.POST['selectedOption'] == "Greed - Interval Scheduling":
@@ -64,6 +65,7 @@ def read_csv_coin(file):
 def calculate_all_changes(change_list):
     change_list_results = []
     change_list_times = []
+    time_initial_total = time.time()
 
     for change in change_list:
         time_initial = time.time()
@@ -74,7 +76,8 @@ def calculate_all_changes(change_list):
 
         change_list_times.append(time_final)
 
-    return change_list_results, change_list_times
+    time_final_total = time.time() - time_initial_total
+    return change_list_results, change_list_times, time_final_total
 
 
 def coin_changing(change_value):
